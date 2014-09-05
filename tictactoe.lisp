@@ -1,6 +1,7 @@
 (defpackage "tictactoe")
 
 (load "crossover")
+(load "gp-control")
 (load "population")
 (load "utilities")
 
@@ -260,8 +261,9 @@
 	(max (car (last normed-totals))))
     (rec-sample-indexes-by-scores num-samples normed-totals max)))
 
-;; Simple driver program
-(defun reproduce-by-crossover (sol-nums pop)
+;; End sampling code
+
+(defun do-crossovers (sol-nums pop)
   (if (null sol-nums)
       nil
     (let* ((mother (nth (car sol-nums) pop))
@@ -269,16 +271,9 @@
 	   (offspring (crossover #'expr-type #'contains-type mother father)))
       (cons (car offspring) (cons (cadr offspring) (reproduce-by-crossover (cddr sol-nums) pop))))))
 
-(defun test-fitness-and-reproduce (pop)
-  (let* ((scores (tournament pop 100 100))
-	 (reproducing-solution-nums (sample-indexes-by-scores (length pop) scores)))
-    (reproduce-by-crossover reproducing-solution-nums pop)))
-	 
-(defun rec-run-gp (population num-iters-left)
-  (if (= 0 num-iters-left)
-      population
-    (rec-run-gp (test-fitness-and-reproduce population) (- num-iters-left 1))))
+(defun build-new-pop (pop fitness-scores)
+  (let* ((reproducing-solution-nums (sample-indexes-by-scores (length pop) fitness-scores)))
+    (do-crossovers reproducing-solution-nums pop)))
 
-(defun run-gp (pop-size num-iters)
-  (let ((init-pop (new-population pop-size #'rand-if)))
-    (rec-run-gp init-pop num-iters)))
+(defun run-ttt-gp (pop-size num-generations)
+  (run-gp pop-size #'rand-if #'eval-pop #'build-new-pop num-generations))

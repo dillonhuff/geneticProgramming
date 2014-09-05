@@ -1,5 +1,5 @@
 (defpackage "population"
-  (:export "create-generation-0"))
+  (:export "create-generation-0" "next-generation"))
 
 (defstruct generation
   population
@@ -41,3 +41,8 @@
   (let* ((gen-0 (new-population size initial-solution-generator))
 	 (gen-0-fitness (funcall pop-fitness-eval gen-0)))
     (init-generation gen-0 gen-0-fitness)))
+
+(defun next-generation (cur-gen eval-func build-pop-func)
+  (let* ((next-gen-pop (funcall build-pop-func (get-population cur-gen) (get-pop-fitness cur-gen)))
+	 (next-gen-fitness (funcall eval-func next-gen-pop)))
+    (init-generation next-gen-pop next-gen-fitness)))
